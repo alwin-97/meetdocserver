@@ -1,7 +1,6 @@
 from django.contrib.auth import login, logout
 from rest_framework import status
-from rest_framework.authentication import TokenAuthentication
-from rest_framework.decorators import api_view, authentication_classes, permission_classes
+from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import IsAuthenticated, IsAdminUser
 from rest_framework.response import Response
 from rest_framework_simplejwt.tokens import RefreshToken
@@ -10,6 +9,12 @@ from authentication.serializers import UserSerializer, UserLoginSerializer
 
 @api_view(['POST'])
 def user_login(request):
+    """
+    Authenticate a user with a username and password.
+    :param request: NA
+    :request body: {"username": "username", "password": "password"}
+    :return: {"data":{"access_token":"","refresh_token":""}, "user":"","role":""}
+    """
     if request.method == 'POST':
         serializer = UserLoginSerializer(data=request.data)
         if serializer.is_valid():
@@ -47,7 +52,7 @@ def user_token_refresh(request):
 
 
 @api_view(['POST'])
-@permission_classes([IsAdminUser])
+@permission_classes([IsAuthenticated,IsAdminUser])
 def user_register(request):
     if not request.user.is_superuser:
         return Response({"error": "Only admin users can perform user registration."},
@@ -64,12 +69,12 @@ def user_register(request):
 
 
 @api_view(['POST'])
+@permission_classes([IsAuthenticated])
 def user_logout(request):
     if request.method == 'POST':
         refresh_token = request.data.get('refresh_token')
         if not refresh_token:
             return Response({"error": "Refresh token is missing"}, status=status.HTTP_400_BAD_REQUEST)
-
         try:
             refresh = RefreshToken(refresh_token)
             refresh.blacklist()

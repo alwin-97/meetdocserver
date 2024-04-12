@@ -1,0 +1,1 @@
+static folder is for saving static files

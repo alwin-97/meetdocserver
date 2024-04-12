@@ -1,0 +1,5 @@
+.venv
+
+authentication/__pycache__/
+meetdoc/__pycache__/
+meetdocserver/__pycache__/
